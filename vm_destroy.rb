@@ -1,4 +1,11 @@
-require 'tty-prompt'
+begin
+  gem 'tty-prompt'
+rescue Gem::LoadError
+  puts "Installing 'tty-prompt' gem..."
+  `gem install tty-prompt`
+  Gem.clear_paths
+  require 'tty-prompt'
+end
 
 prompt = TTY::Prompt.new
 
