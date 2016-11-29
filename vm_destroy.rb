@@ -4,8 +4,9 @@ rescue Gem::LoadError
   puts "Installing 'tty-prompt' gem..."
   `gem install tty-prompt`
   Gem.clear_paths
-  require 'tty-prompt'
 end
+
+require 'tty-prompt'
 
 prompt = TTY::Prompt.new
 
