@@ -1,3 +1,5 @@
+#!/usr/bin/env ruby
+
 begin
   gem 'tty-prompt'
 rescue Gem::LoadError
