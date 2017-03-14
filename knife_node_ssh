@@ -12,14 +12,15 @@ require 'tty-prompt'
 
 prompt = TTY::Prompt.new
 
-qa_envs = [
-  'amstel', 'budweiser', 'corona', 'dogfish', 'fischer', 'guinness', 'harp',
-  'islay', 'jade', 'kirin', 'labatt', 'miller', 'newcastle', 'odin', 'peroni'
-]
-
 def ask
   puts "Please enter a node name or prefix"
   gets.chomp
+end
+
+def is_qa?(target)
+  ['amstel', 'budweiser', 'corona', 'dogfish', 'fischer', 'guinness', 'harp',
+  'islay', 'jade', 'kirin', 'labatt', 'miller', 'newcastle', 'odin', 'peroni']
+  .any? { |env| target.end_with? env }
 end
 
 query  = ARGV[0] || ask
@@ -29,9 +30,9 @@ unless nodes.empty?
   target = prompt.select("Select a node to SSH into", nodes)
   puts target
 
-  domain = qa_envs.any? { |env| target.end_with? env } ? 'pub' : 'box'
+  fqdn = is_qa?(target) ? target : "#{target}.dox.box"
 
-  exec("ssh #{target}.dox.#{domain}")
+  exec("ssh #{fqdn}")
 end
 
 puts "No matching nodes found for '#{query}'"
