@@ -12,20 +12,27 @@ require 'tty-prompt'
 
 prompt = TTY::Prompt.new
 
+qa_envs = [
+  'amstel', 'budweiser', 'corona', 'dogfish', 'fischer', 'guinness', 'harp',
+  'islay', 'jade', 'kirin', 'labatt', 'miller', 'newcastle', 'odin', 'peroni'
+]
+
 def ask
   puts "Please enter a node name or prefix"
   gets.chomp
 end
 
-query = ARGV[0] || ask
-nodes = `knife node list | grep #{query}`.split("\n")
+query  = ARGV[0] || ask
+nodes  = `knife node list | grep #{query}`.split("\n")
 
 unless nodes.empty?
   target = prompt.select("Select a node to SSH into", nodes)
   puts target
-  exec("ssh #{target}.dox.box")
+
+  domain = qa_envs.any? { |env| target.end_with? env } ? 'pub' : 'box'
+
+  exec("ssh #{target}.dox.#{domain}")
 end
 
 puts "No matching nodes found for '#{query}'"
 exit(0)
-
