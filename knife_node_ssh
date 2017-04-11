@@ -17,7 +17,7 @@ def ask
   gets.chomp
 end
 
-def is_qa?(target)
+def qa?(target)
   ['amstel', 'budweiser', 'corona', 'dogfish', 'fischer', 'guinness', 'harp',
   'islay', 'jade', 'kirin', 'labatt', 'miller', 'newcastle', 'odin', 'peroni']
   .any? { |env| target.end_with? env }
@@ -30,7 +30,24 @@ unless nodes.empty?
   target = prompt.select("Select a node to SSH into", nodes)
   puts target
 
-  fqdn = is_qa?(target) ? target : "#{target}.dox.box"
+  # fqdn = case target
+  # when qa?(target)
+  #   target
+  # when target.include?('-i-') # weak check
+  #   ip = `knife node show #{target} -a ipaddress | grep ipaddress | cut -d' ' -f4`
+  #   "clindsay@#{ip}"
+  # else
+  #   "#{target}.dox.box"
+  # end
+
+  if qa?(target)
+    fqdn = target
+  elsif target.include?('-i-')
+    ip = `knife node show #{target} -a ipaddress | grep ipaddress | cut -d' ' -f4`
+    fqdn = "clindsay@#{ip}"
+  else
+    fqdn = "#{target}.dox.box"
+  end
 
   exec("ssh #{fqdn}")
 end
