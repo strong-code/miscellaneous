@@ -30,16 +30,6 @@ unless nodes.empty?
   target = prompt.select("Select a node to SSH into", nodes)
   puts target
 
-  # fqdn = case target
-  # when qa?(target)
-  #   target
-  # when target.include?('-i-') # weak check
-  #   ip = `knife node show #{target} -a ipaddress | grep ipaddress | cut -d' ' -f4`
-  #   "clindsay@#{ip}"
-  # else
-  #   "#{target}.dox.box"
-  # end
-
   if qa?(target)
     fqdn = target
   elsif target.include?('-i-')
