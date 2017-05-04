@@ -41,10 +41,13 @@ unless nodes.empty?
   elsif target.include?('-i-')
     ip = `knife node show #{target} -a ipaddress | grep ipaddress | cut -d' ' -f4`
     fqdn = "clindsay@#{ip}"
+  elsif target.start_with?('pre-')
+    fqdn = "#{target}.dox.rox"
   else
     fqdn = "#{target}.dox.box"
   end
 
+  puts "Attempting to SSH into #{fqdn}..."
   exec("ssh #{fqdn}")
 end
 
