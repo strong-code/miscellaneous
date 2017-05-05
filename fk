@@ -44,6 +44,9 @@ begin
   target = prompt.select("Select a process to kill") do |menu|
     pid_proc_list.each { |x| menu.choice(x.values.first, x.keys.first) }
   end
+rescue TTY::Prompt::ConfigurationError
+  puts "No matching processes found"
+  exit(0)
 rescue TTY::Prompt::Reader::InputInterrupt
   puts "\nCancelled. Nothing killed"
   exit(0)
