@@ -30,7 +30,6 @@ unless nodes.empty?
 
   begin
     target = prompt.select("Select a node to SSH into", nodes)
-    puts target
   rescue TTY::Prompt::Reader::InputInterrupt
     puts "\nCancelled"
     exit(0)
