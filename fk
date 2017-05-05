@@ -1,0 +1,53 @@
+#!/usr/bin/env ruby
+
+# FK - Find & Kill a process
+
+begin
+  gem 'tty-prompt'
+rescue Gem::LoadError
+  puts "Installing 'tty-prompt' gem..."
+  `gem install tty-prompt`
+  Gem.clear_paths
+end
+
+require 'tty-prompt'
+
+prompt = TTY::Prompt.new
+
+FILTERS = ['-c', 'egrep', '/miscellaneous/fk']
+
+def ask
+  puts "Enter a process name or regex"
+  gets.chomp
+end
+
+def filtered?(pair)
+  proc_name = pair.values.first
+
+  if proc_name.nil? || proc_name == ''
+    return true
+  end
+
+  FILTERS.any? { |f| proc_name.include?(f) }
+end
+
+proc_name = ARGV[0] || ask
+
+pid_proc_list =
+  `ps aux | egrep #{proc_name}`
+  .split("\n")
+  .map { |l| l.split }
+  .map { |l| { l[1].to_i => l[10..-1].join(' ') }}
+  .reject { |l| filtered?(l) }
+
+begin
+  target = prompt.select("Select a process to kill") do |menu|
+    pid_proc_list.each { |x| menu.choice(x.values.first, x.keys.first) }
+  end
+rescue TTY::Prompt::Reader::InputInterrupt
+  puts "\nCancelled. Nothing killed"
+  exit(0)
+end
+
+puts "Terminating PID #{target}"
+`sudo kill #{target}`
