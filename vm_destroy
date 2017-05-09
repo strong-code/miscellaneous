@@ -1,5 +1,5 @@
 #!/usr/bin/env ruby
-require './utils.rb'
+require_relative './utils.rb'
 
 prompt = Utils::Prompt.new
 

@@ -1,0 +1,93 @@
+#!/usr/bin/env ruby
+
+# mlc - merge, lock, chef-client a dox cookbook branch
+# Merges a given branch into master, issues doxbot lock and forces chef-client run
+
+require 'net/http'
+require 'uri'
+require 'json'
+require 'openssl'
+require_relative './utils.rb'
+
+ENVS = ['all', 'amstel', 'budweiser', 'corona', 'dogfish', 'ember', 'fischer',
+  'guinness', 'harp', 'islay', 'jade', 'kirin', 'labatt', 'miller', 'newcastle',
+  'odin', 'peroni']
+
+@prompt = Utils::Prompt.new
+
+unless File.file?('metadata.rb')
+  @prompt.error "This isn't a top-level cookbook repo. Exiting"
+  exit(1)
+end
+
+# Merge branch into master
+`git fetch origin`
+local_branches = `git branch`.split
+
+query = @prompt.ask "Enter branch name or prefix to merge into master: "
+
+local_branches.select! { |b| b.include? query }
+
+target_branch = @prompt.select("Verify local branch name", local_branches)
+
+`git checkout master`
+merge_status = `git merge --no-commit --no-ff #{target_branch}`
+
+unless merge_status.include?('Automatic merge went well')
+  @prompt.warn 'Cannot automatically merge. Fix conflicts and try again. Aborting merge, nothing committed.'
+  `git merge --abort`
+  exit(1)
+end
+
+@prompt.ok "No conflicts found, merging into master"
+`git merge --continue`
+
+@prompy.ok "Pushing to origin/master"
+`git push origin master`
+
+# Berks upload
+`berks upload` if @prompt.yes? "Should I 'berks upload' for you?"
+
+# Doxbot cookbook lock
+if @prompt.yes? "Should doxbot lock the latest version for you?"
+  env = @prompt.select("Choose environment for lock", ENVS)
+  dir = File.basename(Dir.getwd)
+  ver = `cat metadata.rb | grep version | cut -d ' ' -f2 | tr -d "'"`.strip
+  @prompt.ok "Locking '#{dir}' to #{ver} in '#{env}'"
+
+  uri = URI.parse('https://slack.com/api/chat.postMessage')
+  payload = {
+    token: ENV['SLACK_OAUTH_TOKEN'],
+    channel: 'ops',
+    text: "doxbot chef lock #{env} #{dir} #{ver}"
+  }
+
+  response = JSON.parse(Net::HTTP.post_form(uri, payload).body)
+
+  unless response['ok']
+    @prompt.error "Error: #{response['error']}. Check slack credentials. Nothing has been locked."
+    exit(1)
+  end
+
+  @prompt.ok "Lock requested successfully"
+else
+  @prompt.warn "No lock set. Exiting"
+  exit(0)
+end
+
+# Force chef-client on selected nodes
+if @prompt.yes? "Should I run chef-client on a node?"
+  query = @prompt.ask "Enter a node name or prefix to search for: "
+  nodes = `knife node list | grep #{query}`.split
+  targets = @prompt.multi_select("Select node(s): ", nodes)
+  @prompt.ok "Running chef-client on following nodes: #{targets}. This may take a minute..."
+
+  log = 'mlc-log-' + Time.now.strftime('%Y-%m-%d_%H:%M:%S')
+  targets.each { |t| `knife ssh "name:#{t}" "sudo chef-client" >> /tmp/#{log}`}
+
+  @prompt.ok "Done! output has been logged to /tmp/#{log}"
+  exit(0)
+else
+  @promp.warn "Not running chef-client on anything. Exiting"
+  exit(0)
+end
