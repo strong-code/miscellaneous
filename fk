@@ -1,18 +1,9 @@
 #!/usr/bin/env ruby
 
 # FK - Find & Kill a process
+require './utils.rb'
 
-begin
-  gem 'tty-prompt'
-rescue Gem::LoadError
-  puts "Installing 'tty-prompt' gem..."
-  `gem install tty-prompt`
-  Gem.clear_paths
-end
-
-require 'tty-prompt'
-
-prompt = TTY::Prompt.new
+prompt = Utils::Prompt.new
 
 FILTERS = ['-c', 'egrep', '/miscellaneous/fk']
 

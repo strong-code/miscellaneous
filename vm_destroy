@@ -1,16 +1,7 @@
 #!/usr/bin/env ruby
+require './utils.rb'
 
-begin
-  gem 'tty-prompt'
-rescue Gem::LoadError
-  puts "Installing 'tty-prompt' gem..."
-  `gem install tty-prompt`
-  Gem.clear_paths
-end
-
-require 'tty-prompt'
-
-prompt = TTY::Prompt.new
+prompt = Utils::Prompt.new
 
 running_vms = `VBoxManage list runningvms`.split('\n').map { |v| v.split(' ').first }
 
