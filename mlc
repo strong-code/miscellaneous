@@ -20,33 +20,39 @@ unless File.file?('metadata.rb')
   exit(1)
 end
 
-# Merge branch into master
-`git fetch origin`
-local_branches = `git branch`.split
+if `git branch | grep \\*`.include? 'master'
+  @prompt.ok "Already on master branch, skipping merge."
+else
+  # Merge branch into master
+  `git fetch origin`
+  local_branches = `git branch`.split
 
-query = @prompt.ask "Enter branch name or prefix to merge into master: "
+  query = @prompt.ask "Enter branch name or prefix to merge into master: "
 
-local_branches.select! { |b| b.include? query }
+  local_branches.select! { |b| b.include? query }
 
-target_branch = @prompt.select("Verify local branch name", local_branches)
+  target_branch = @prompt.select("Verify local branch name", local_branches)
 
-`git checkout master`
-merge_status = `git merge --no-commit --no-ff #{target_branch} 2>&1`
+  `git checkout master`
+  merge_status = `git merge --no-commit --no-ff #{target_branch} 2>&1`
 
-unless merge_status.include?('Automatic merge went well')
-  @prompt.warn 'Cannot automatically merge. Fix conflicts and try again. Aborting merge, nothing committed.'
-  `git merge --abort`
-  exit(1)
+  unless merge_status.include?('Automatic merge went well')
+    @prompt.warn 'Cannot automatically merge. Fix conflicts and try again. Aborting merge, nothing committed.'
+    `git merge --abort`
+    exit(1)
+  end
+
+  @prompt.ok "No conflicts found, merging into master"
+  `git commit -m "Merge pull request from doximity/#{target_branch}"`
+
+  @prompt.ok "Pushing to origin/master"
+  `git push origin master`
 end
 
-@prompt.ok "No conflicts found, merging into master"
-`git commit -m "Merge pull request from doximity/#{target_branch}"`
-
-@prompt.ok "Pushing to origin/master"
-`git push origin master`
 
 # Berks upload
 `berks upload` if @prompt.yes? "Should I 'berks upload' for you?"
+
 
 # Doxbot cookbook lock
 if @prompt.yes? "Should doxbot lock the latest version for you?"
@@ -74,6 +80,7 @@ else
   @prompt.warn "No lock set. Exiting"
   exit(0)
 end
+
 
 # Force chef-client on selected nodes
 if @prompt.yes? "Should I run chef-client on a node?"
