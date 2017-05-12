@@ -25,13 +25,16 @@ if `git branch | grep \\*`.include? 'master'
 else
   # Merge branch into master
   `git fetch origin`
-  local_branches = `git branch`.split
 
-  query = @prompt.ask "Enter branch name or prefix to merge into master: "
+  target_branch = `git branch | grep \\*`.strip.split.last
 
-  local_branches.select! { |b| b.include? query }
+  unless @query.yes? "Do you want to merge the current branch? (#{`git branch | grep \\*`})"
+    query = @prompt.ask "Enter branch name or prefix to merge into master: "
 
-  target_branch = @prompt.select("Verify local branch name", local_branches)
+    local_branches = `git branch`.split.select! { |b| b.include? query }
+
+    target_branch = @prompt.select("Verify local branch name", local_branches)
+  end
 
   `git checkout master`
   merge_status = `git merge --no-commit --no-ff #{target_branch} 2>&1`
