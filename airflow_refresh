@@ -1,0 +1,5 @@
+#!/usr/bin/env ruby
+
+# Pulls in latest airflow prod image and relaunches containers
+
+`knife ssh 'name:prod-airflow*' 'for i in $(sudo docker ps --format {{.Names}}); do sudo docker rm -f $i; done; sudo chef-client'`

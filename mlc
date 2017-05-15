@@ -98,6 +98,6 @@ if @prompt.yes? "Should I run chef-client on a node?"
   @prompt.ok "Done! output has been logged to /tmp/#{log}"
   exit(0)
 else
-  @promp.warn "Not running chef-client on anything. Exiting"
+  @prompt.warn "Not running chef-client on anything. Exiting"
   exit(0)
 end
