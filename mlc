@@ -28,7 +28,7 @@ else
 
   target_branch = `git branch | grep \\*`.strip.split.last
 
-  unless @query.yes? "Do you want to merge the current branch? (#{`git branch | grep \\*`})"
+  unless @prompt.yes? "Do you want to merge the current branch? (#{`git branch | grep \\*`.strip})"
     query = @prompt.ask "Enter branch name or prefix to merge into master: "
 
     local_branches = `git branch`.split.select! { |b| b.include? query }
