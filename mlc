@@ -61,7 +61,7 @@ end
 if @prompt.yes? "Should doxbot lock the latest version for you?"
   env = @prompt.select("Choose environment for lock", ENVS)
   dir = File.basename(Dir.getwd)
-  ver = `cat metadata.rb | grep version | cut -d ' ' -f2 | tr -d "'"`.strip
+  ver = `cat metadata.rb | grep version`.strip.split.last[1..-2]
   @prompt.ok "Locking '#{dir}' to #{ver} in '#{env}'"
 
   uri = URI.parse('https://slack.com/api/chat.postMessage')
