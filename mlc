@@ -54,11 +54,13 @@ end
 
 
 # Berks upload
-`berks upload` if @prompt.yes? "Should I 'berks upload' for you?"
+def berks_upload
+  puts "berks upload"
+end
 
 
 # Doxbot cookbook lock
-if @prompt.yes? "Should doxbot lock the latest version for you?"
+def doxbot_lock
   env = @prompt.select("Choose environment for lock", ENVS)
   dir = File.basename(Dir.getwd)
   ver = `cat metadata.rb | grep version`.strip.split.last[1..-2]
@@ -86,7 +88,7 @@ end
 
 
 # Force chef-client on selected nodes
-if @prompt.yes? "Should I run chef-client on a node?"
+def chef_client
   query = @prompt.ask "Enter a node name or prefix to search for: "
   nodes = `knife node list | grep #{query}`.split
   targets = @prompt.multi_select("Select node(s): ", nodes)
@@ -100,4 +102,10 @@ if @prompt.yes? "Should I run chef-client on a node?"
 else
   @prompt.warn "Not running chef-client on anything. Exiting"
   exit(0)
+end
+
+@prompt.multi_select "What do you want me to do?" do |menu|
+  menu.choice 'berks upload', -> { berks_upload }
+  menu.choice 'doxbot lock', -> { doxbot_lock }
+  menu.choice 'chef-client', -> { chef_client }
 end
