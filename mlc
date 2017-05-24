@@ -55,7 +55,9 @@ end
 
 # Berks upload
 def berks_upload
-  puts "berks upload"
+  @prompt.ok "Running berks upload..."
+  `berks upload`
+  @promo.ok "Done"
 end
 
 
@@ -81,9 +83,6 @@ def doxbot_lock
   end
 
   @prompt.ok "Lock requested successfully"
-else
-  @prompt.warn "No lock set. Exiting"
-  exit(0)
 end
 
 
@@ -98,10 +97,6 @@ def chef_client
   targets.each { |t| `knife ssh "name:#{t}" "sudo chef-client" >> /tmp/#{log}`}
 
   @prompt.ok "Done! output has been logged to /tmp/#{log}"
-  exit(0)
-else
-  @prompt.warn "Not running chef-client on anything. Exiting"
-  exit(0)
 end
 
 @prompt.multi_select "What do you want me to do?" do |menu|
