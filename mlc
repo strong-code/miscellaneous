@@ -20,38 +20,39 @@ unless File.file?('metadata.rb')
   exit(1)
 end
 
-if `git branch | grep \\*`.include? 'master'
-  @prompt.ok "Already on master branch, skipping merge."
-else
-  # Merge branch into master
-  `git fetch origin`
+def git_merge
+  if `git branch | grep \\*`.include? 'master'
+    @prompt.ok "Already on master branch, skipping merge."
+  else
+    # Merge branch into master
+    `git fetch origin`
 
-  target_branch = `git branch | grep \\*`.strip.split.last
+    target_branch = `git branch | grep \\*`.strip.split.last
 
-  unless @prompt.yes? "Do you want to merge the current branch? (#{`git branch | grep \\*`.strip})"
-    query = @prompt.ask "Enter branch name or prefix to merge into master: "
+    unless @prompt.yes? "Do you want to merge the current branch? (#{`git branch | grep \\*`.strip})"
+      query = @prompt.ask "Enter branch name or prefix to merge into master: "
 
-    local_branches = `git branch`.split.select! { |b| b.include? query }
+      local_branches = `git branch`.split.select! { |b| b.include? query }
 
-    target_branch = @prompt.select("Verify local branch name", local_branches)
+      target_branch = @prompt.select("Verify local branch name", local_branches)
+    end
+
+    `git checkout master`
+    merge_status = `git merge --no-commit --no-ff #{target_branch} 2>&1`
+
+    unless merge_status.include?('Automatic merge went well')
+      @prompt.warn 'Cannot automatically merge. Fix conflicts and try again. Aborting merge, nothing committed.'
+      `git merge --abort`
+      exit(1)
+    end
+
+    @prompt.ok "No conflicts found, merging into master"
+    `git commit -m "Merge pull request from doximity/#{target_branch}"`
+
+    @prompt.ok "Pushing to origin/master"
+    `git push origin master`
   end
-
-  `git checkout master`
-  merge_status = `git merge --no-commit --no-ff #{target_branch} 2>&1`
-
-  unless merge_status.include?('Automatic merge went well')
-    @prompt.warn 'Cannot automatically merge. Fix conflicts and try again. Aborting merge, nothing committed.'
-    `git merge --abort`
-    exit(1)
-  end
-
-  @prompt.ok "No conflicts found, merging into master"
-  `git commit -m "Merge pull request from doximity/#{target_branch}"`
-
-  @prompt.ok "Pushing to origin/master"
-  `git push origin master`
 end
-
 
 # Berks upload
 def berks_upload
@@ -100,6 +101,7 @@ def chef_client
 end
 
 @prompt.multi_select "What do you want me to do?" do |menu|
+  menu.choice 'git merge', -> { git_merge }
   menu.choice 'berks upload', -> { berks_upload }
   menu.choice 'doxbot lock', -> { doxbot_lock }
   menu.choice 'chef-client', -> { chef_client }
