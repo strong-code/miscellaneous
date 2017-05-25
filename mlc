@@ -57,7 +57,7 @@ end
 def berks_upload
   @prompt.ok "Running berks upload..."
   `berks upload`
-  @promo.ok "Done"
+  @prompt.ok "Done"
 end
 
 
