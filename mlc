@@ -57,8 +57,13 @@ end
 # Berks upload
 def berks_upload
   @prompt.ok "Running berks upload..."
-  `berks upload`
-  @prompt.ok "Done"
+  out = `berks upload`
+  if out.include? "The lockfile is out of sync!"
+    @promp.error "Lockfile out of sync. Run `berks install` then try again"
+    exit(1)
+  else
+    @prompt.ok "Done"
+  end
 end
 
 
