@@ -9,7 +9,7 @@ require 'json'
 require 'openssl'
 require_relative './utils.rb'
 
-ENVS = ['all', 'amstel', 'budweiser', 'corona', 'dogfish', 'ember', 'fischer',
+ENVS = ['all', 'prod-aws', 'amstel', 'budweiser', 'corona', 'dogfish', 'ember', 'fischer',
   'guinness', 'harp', 'islay', 'jade', 'kirin', 'labatt', 'miller', 'newcastle',
   'odin', 'peroni']
 
@@ -57,8 +57,16 @@ end
 # Berks upload
 def berks_upload
   @prompt.ok "Running berks upload..."
-  `berks upload`
-  @prompt.ok "Done"
+  out = `berks upload`
+  if out.include? "The lockfile is out of sync!"
+    @prompt.error "Lockfile out of sync. Run `berks install` then try again"
+    exit(1)
+  elsif out.include? "There was an error connecting to the Chef Server"
+    @prompt.error "There was an error connecting to the Chef Server. Check cookbook and re-upload"
+    exit(1)
+  else
+    @prompt.ok "Done"
+  end
 end
 
 
