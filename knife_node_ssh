@@ -20,7 +20,12 @@ nodes  = `knife node list | grep #{query}`.split("\n")
 unless nodes.empty?
 
   begin
-    target = prompt.select("Select a node to SSH into", nodes)
+    if nodes.length == 1
+      target = nodes.first
+      puts "Only 1 matching node found. Opening SSH tunnel to #{target}..."
+    else
+      target = prompt.select("Select a node to SSH into", nodes)
+    end
   rescue TTY::Prompt::Reader::InputInterrupt
     puts "\nCancelled"
     exit(0)
