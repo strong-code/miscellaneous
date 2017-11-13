@@ -9,7 +9,7 @@ require 'json'
 require 'openssl'
 require_relative './utils.rb'
 
-ENVS = ['all', 'prod-aws', 'amstel', 'budweiser', 'corona', 'dogfish', 'ember', 'fischer',
+ENVS = ['all', 'prod-aws', 'pre-prod', 'amstel', 'budweiser', 'corona', 'dogfish', 'ember', 'fischer',
   'guinness', 'harp', 'islay', 'jade', 'kirin', 'labatt', 'miller', 'newcastle',
   'odin', 'peroni']
 

@@ -9,7 +9,7 @@ def ask
 end
 
 def qa?(target)
-  ['amstel', 'budweiser', 'corona', 'dogfish', 'fischer', 'guinness', 'harp',
+  ['amstel', 'budweiser', 'corona', 'dogfish', 'ember', 'fischer', 'guinness', 'harp',
   'islay', 'jade', 'kirin', 'labatt', 'miller', 'newcastle', 'odin', 'peroni']
   .any? { |env| target.end_with? env }
 end
